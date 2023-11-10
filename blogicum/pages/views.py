@@ -11,4 +11,3 @@ def csrf_failure(request, reason=''):
 
 def server_error(request, reason=''):
     return render(request, 'pages/500.html', status=500)
-
