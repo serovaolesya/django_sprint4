@@ -59,7 +59,8 @@ class Homepage(PostModelMixin, PublishedPostsMixin, ListView):
         return self.get_published_posts_queryset()
 
 
-class UserInfoPage(PostModelMixin, AllPostsMixin, PublishedPostsMixin, ListView):
+class UserInfoPage(PostModelMixin, AllPostsMixin,
+                   PublishedPostsMixin, ListView):
     template_name = 'blog/profile.html'
     author = None
 
