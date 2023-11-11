@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Count
 from django.utils import timezone
 
 from core.models import PublishedModel
@@ -9,11 +11,10 @@ User = get_user_model()
 
 class PublishedPostsManager(models.Manager):
     def get_queryset(self):
-        return (super().get_queryset().filter(
-                pub_date__lte=timezone.now(),
-                is_published=True,
-                category__is_published=True,)
-                )
+        return super().get_queryset().filter(
+            pub_date__lte=timezone.now(),
+            is_published=True,
+            category__is_published=True,)
 
 
 class Category(PublishedModel):
@@ -54,7 +55,8 @@ class Post(PublishedModel):
         help_text='Если установить дату и время в будущем'
                   ' — можно делать отложенные публикации.')
     image = models.ImageField('Изображение',
-                              upload_to='post_images', blank=True)
+                              upload_to=settings.POST_IMAGES_UPLOAD_FOLDER,
+                              blank=True)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -83,6 +85,24 @@ class Post(PublishedModel):
         verbose_name_plural = 'Публикации'
         ordering = ['-pub_date']
 
+    def get_published_posts(self):
+        return Post.filtered_objects.select_related(
+            'category',
+            'author',
+            'location'
+        ).annotate(comment_count=Count(
+            'comments'
+        )).order_by('-pub_date')
+
+    def get_all_posts(self):
+        return Post.objects.select_related(
+            'category',
+            'author',
+            'location'
+        ).annotate(comment_count=Count(
+            'comments'
+        )).order_by('-pub_date')
+
     def __str__(self):
         return self.title
 
@@ -92,11 +112,12 @@ class Comment(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comment',
+        related_name='comments',
     )
     created_at = models.DateTimeField(auto_now_add=True,
                                       verbose_name="Добавлено")
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
+                               related_name='comments')
 
     class Meta:
         verbose_name = 'комментарий'
