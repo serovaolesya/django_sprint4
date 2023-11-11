@@ -67,4 +67,3 @@ class CommentAdmin(admin.ModelAdmin):
     )
     ordering = ('created_at',)
     list_per_page = 10
-
