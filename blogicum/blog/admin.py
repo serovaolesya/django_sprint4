@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import *
+from .models import Post, Category, Location, Comment
 
 
 admin.site.empty_value_display = 'Не задано'
@@ -55,3 +55,16 @@ class PostAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
     ordering = ('pub_date',)
     list_per_page = 10
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = (
+        'text',
+        'author',
+        'post',
+        'created_at'
+    )
+    ordering = ('created_at',)
+    list_per_page = 10
+
